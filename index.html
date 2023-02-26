@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        class Calculator {
+            #result;
+            #number;
+            #enteredValue;
+            #displayedValue;
+            #array = []
+            #operators = {
+                plus: '+',
+                minus: '-',
+                multiplication: '*',
+                division: '/',
+                equality: '=',
+                percent: '%',
+                point: '.',
+                reset: 'ac',
+                clear: 'c',
+                polarity: 'p'
+            }
+            #btns = [
+                {
+                    text: 0,
+                    value: 0,
+                    type: 'number'
+                },
+                {
+                    text: ',',
+                    value: this.#operators.point,
+                    type: 'number'
+                },
+                {
+                    text: '=',
+                    value: this.#operators.equality,
+                    type: 'symbol'
+                },
+                {
+                    text: '+',
+                    value: this.#operators.plus,
+                    type: 'symbol'
+                },
+                {
+                    text: 1,
+                    value: 1,
+                    type: 'number'
+                },
+                {
+                    text: 2,
+                    value: 2,
+                    type: 'number'
+                },
+                {
+                    text: 3,
+                    value: 3,
+                    type: 'number'
+                },
+                {
+                    text: '-',
+                    value: this.#operators.minus,
+                    type: 'symbol'
+                },
+                {
+                    text: 4,
+                    value: 4,
+                    type: 'number'
+                },
+
+                {
+                    text: 5,
+                    value: 5,
+                    type: 'number'
+                },
+                {
+                    text: 6,
+                    value: 6,
+                    type: 'number'
+                },
+                {
+                    text: 'x',
+                    value: this.#operators.multiplication,
+                    type: 'symbol'
+                },
+                {
+                    text: 7,
+                    value: 7,
+                    type: 'number'
+                },
+                {
+                    text: 8,
+                    value: 8,
+                    type: 'number'
+                },
+                {
+                    text: 9,
+                    value: 9,
+                    type: 'number'
+                },
+                {
+                    text: '/',
+                    value: this.#operators.division,
+                    type: 'symbol'
+                },
+                {
+                    text: 'AC',
+                    value: this.#operators.reset,
+                    type: 'reset'
+                },
+                {
+                    text: 'C',
+                    value: this.#operators.clear,
+                    type: 'clean'
+                },
+                {
+                    text: '+/-',
+                    value: this.#operators.polarity,
+                    type: 'p'
+                },
+                {
+                    text: '%',
+                    value: this.#operators.percent,
+                    type: 'symbol'
+                }
+            ]
+            createCalc() {
+                const calc = document.createElement('div');
+                calc.setAttribute('class', 'calc');
+                const display = document.createElement('div');
+                display.setAttribute('class', 'display');
+                display.setAttribute('tabindex', -1)
+                const fragment = new DocumentFragment();
+                for (const el of this.#btns) {
+                    const button = document.createElement('button');
+
+                    button.setAttribute('class', el.type);
+                    button.textContent = el.text;
+                    button.value = el.value;
+                    fragment.append(button);
+                    if (fragment.childElementCount === 4) {
+                        const calcRow = document.createElement('div');
+                        calcRow.setAttribute('class', 'calcRow');
+                        calcRow.append(fragment);
+                        calc.prepend(calcRow);
+                    }
+                }
+                calc.prepend(display);
+                document.body.prepend(calc);
+
+                document.addEventListener('click', (e) => {
+                    const target = e.target;
+
+                    if (target.tagName === 'BUTTON') {
+                        const display = target.closest('.calc').childNodes[0];
+                        display.textContent = this.#collectNumbers(target);
+                    }
+                })
+            }
+
+            #collectNumbers({ value, className }) {
+                if (!this.#enteredValue) {
+                    this.#enteredValue = '';
+                }
+                if (!this.#displayedValue) {
+                    this.#displayedValue = '';
+                }
+
+                if (this.#enteredValue.length < 16 && value!='p') {
+                    this.#enteredValue += value;
+                    this.#displayedValue += value;
+                }
+                else if(className === 'symbol'){
+                    this.#enteredValue += value;
+                    this.#displayedValue += value;
+                }
+                if (className === 'number') {
+                    this.#number = '';
+                    this.#number = this.#enteredValue;
+                }
+
+                if (className === 'symbol') {
+                    this.#enteredValue = undefined;
+                    if (this.#number) {
+                        this.#array.push(Number(this.#number));
+                    }
+                    this.#array.push(value);
+
+                    this.#getResult(this.#array, value);
+                }
+                if (value === 'ac') {
+                    this.#reset()
+                }
+                if (value === 'c') {
+                    this.#clean()
+                }
+                if (value === 'p') {
+                    this.#polarity()
+                }
+                return this.#displayedValue ? this.#displayedValue : this.#result;
+            }
+            #reset() {
+                this.#array = [];
+                this.#number = undefined;
+                this.#displayedValue = undefined;
+                this.#enteredValue = undefined;
+                this.#result = undefined;
+                return;
+            }
+
+            #clean() {
+                if (!this.#array[0]) {
+                    this.#number = undefined;
+                    this.#enteredValue = undefined;
+                    this.#displayedValue = undefined;
+                }
+                else {
+                    this.#number = undefined;
+                    this.#enteredValue = undefined;
+                    this.#displayedValue = this.#array.join('');
+                }
+                return;
+            }
+            #polarity() {
+                this.#enteredValue = undefined;
+                if (!this.#array[0] && this.#number) {
+                    if (Number(this.#number) > 0) {
+                        this.#number = '-' + this.#number;
+                        this.#displayedValue = this.#number;
+                    }
+                    else {
+                        const a = this.#number.toString().split('').filter(el => Number(el)).join('');
+                        this.#number = a;
+                        this.#displayedValue = this.#number;
+                    }
+                }
+                else if (this.#number) {
+                    if (Number(this.#number) > 0) {
+                        this.#number = '-' + this.#number;
+                        this.#displayedValue = this.#array.join('') + this.#number;
+                    }
+                    else {
+                        const a = this.#number.toString().split('').filter(el => Number(el)).join('');
+                        this.#number = a;
+                        this.#displayedValue = this.#array.join('') + this.#number;
+                    }
+                }
+
+            }
+
+            #getResult(array, symbol) {
+                if (!Number(array[0])) {
+                    this.#array = [];
+                    this.#number = undefined;
+                    this.#displayedValue = undefined;
+                    this.#enteredValue = undefined;
+                    this.#result = undefined;
+                    return;
+                }
+                if (array[1] === "=") {
+                    this.#array = [];
+                    this.#displayedValue = undefined;
+                    this.#number = undefined;
+                    return;
+                }
+                if (symbol === '%') {
+                    if (!array[3]) {
+                        this.#result = this.#math(array[0], null, null, symbol);
+                        this.#array = [];
+                        this.#number = this.#result;
+                        this.#displayedValue = this.#number;
+                    }
+                    this.#result = this.#math(array[0], array[1], array[2], symbol);
+                    this.#array = [];
+                    this.#number = this.#result;
+                    this.#displayedValue = this.#number;
+                    return;
+                }
+                if (array.length === 4) {
+                    this.#result = this.#math(array[0], array[1], array[2]);
+                    this.#array = [];
+                    this.#enteredValue = null;
+                    this.#array.push(this.#result);
+                    this.#array.push(symbol);
+                    this.#number = this.#result;
+
+                    if (symbol !== '=') {
+                        this.#displayedValue = this.#result + symbol;
+                    }
+                    else if (symbol === '=') {
+                        this.#array = []
+                        this.#number = undefined;
+                        this.#displayedValue = undefined;
+                        this.#enteredValue = undefined;
+                        return
+                    };
+                    return;
+                }
+
+            }
+
+            #math(a, symbol, b, percent) {
+                if (!percent) {
+                    if (symbol === '+') {
+                        return a + b;
+                    }
+                    if (symbol === '-') {
+                        return a - b;
+                    }
+                    if (symbol === '*') {
+                        return a * b;
+                    }
+                    if (symbol === '/') {
+                        return a / b;
+                    }
+                }
+                if (percent) {
+                    if (!b) {
+                        return a / 100;
+                    }
+                    if (symbol === '+') {
+                        return (a + ((a * b) / 100));
+                    }
+                    if (symbol === '-') {
+                        return (a - ((a * b) / 100));
+                    }
+                    if (symbol === '*') {
+                        return (a * (b / 100));
+                    }
+                    if (symbol === '/') {
+                        return (a / (b / 100));
+                    }
+                }
+            }
+        }
+        const calc = new Calculator();
+        calc.createCalc();
+    </script>
+</body>
+
+</html>
